@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/workspaces/Raytracer/build",
+  "command": "/usr/bin/c++   -g -std=gnu++17 -o CMakeFiles/raytracer.dir/main.cpp.o -c /workspaces/Raytracer/main.cpp",
+  "file": "/workspaces/Raytracer/main.cpp",
+  "output": "CMakeFiles/raytracer.dir/main.cpp.o"
+}
+]
