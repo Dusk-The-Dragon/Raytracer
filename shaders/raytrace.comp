@@ -1,0 +1,68 @@
+#version 430 core
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba32f, binding = 0) uniform image2D outputImage;
+
+uniform vec2 resolution;
+uniform float time;
+
+struct Sphere {
+    vec3 center;
+    float radius;
+    vec3 color;
+};
+
+Sphere sphere = Sphere(vec3(0.0, 0.0, -5.0), 1.0, vec3(1.0, 0.0, 0.0));
+
+vec3 rayDirection(vec2 uv, vec3 cameraPos, vec3 lookAt, float fov) {
+    vec3 forward = normalize(lookAt - cameraPos);
+    vec3 right = normalize(cross(forward, vec3(0.0, 1.0, 0.0)));
+    vec3 up = cross(right, forward);
+
+    float aspect = resolution.x / resolution.y;
+    float tanFov = tan(radians(fov) * 0.5);
+
+    vec2 ndc = uv * 2.0 - 1.0;
+    vec3 rayDir = normalize(forward + right * ndc.x * tanFov * aspect + up * ndc.y * tanFov);
+    return rayDir;
+}
+
+bool intersectSphere(vec3 rayOrigin, vec3 rayDir, Sphere s, out float t) {
+    vec3 oc = rayOrigin - s.center;
+    float a = dot(rayDir, rayDir);
+    float b = 2.0 * dot(oc, rayDir);
+    float c = dot(oc, oc) - s.radius * s.radius;
+    float discriminant = b * b - 4 * a * c;
+    if (discriminant < 0) return false;
+    t = (-b - sqrt(discriminant)) / (2 * a);
+    return t > 0;
+}
+
+vec3 trace(vec3 rayOrigin, vec3 rayDir) {
+    float t;
+    if (intersectSphere(rayOrigin, rayDir, sphere, t)) {
+        vec3 hitPoint = rayOrigin + rayDir * t;
+        vec3 normal = normalize(hitPoint - sphere.center);
+        vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
+        float diff = max(dot(normal, lightDir), 0.0);
+        return sphere.color * diff;
+    }
+    return vec3(0.1, 0.1, 0.1); // background
+}
+
+void main() {
+    ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
+    if (pixelCoords.x >= int(resolution.x) || pixelCoords.y >= int(resolution.y)) return;
+
+    vec2 uv = vec2(pixelCoords) / resolution;
+
+    vec3 cameraPos = vec3(0.0, 0.0, 0.0);
+    vec3 lookAt = vec3(0.0, 0.0, -1.0);
+    float fov = 60.0;
+
+    vec3 rayDir = rayDirection(uv, cameraPos, lookAt, fov);
+    vec3 color = trace(cameraPos, rayDir);
+
+    imageStore(outputImage, pixelCoords, vec4(color, 1.0));
+}

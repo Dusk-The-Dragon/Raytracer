@@ -1,15 +1,25 @@
 {
     "configurations": [
         {
-            "name": "Linux",
+            "name": "CUDA",
             "includePath": [
                 "${workspaceFolder}/**"
             ],
-            "defines": [],
-            "compilerPath": "/usr/bin/clang",
+            "defines": [
+                "__CUDA_ARCH__=700",
+                "__device__=",
+                "__host__=",
+                "__global__=",
+                "__constant__=",
+                "__shared__=",
+                "__syncthreads()=",
+                "fminf=fmin",
+                "sqrtf=sqrt"
+            ],
+            "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "linux-clang-x64"
+            "intelliSenseMode": "linux-gcc-x64"
         }
     ],
     "version": 4
